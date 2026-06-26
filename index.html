@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>信息流拍摄素材库</title>
+<style>
+/* ========== Reset & Base ========== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f8fafc; color: #334155; line-height: 1.5; }
+
+/* ========== Header ========== */
+.header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 12px 24px; position: sticky; top: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; }
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-title { font-size: 18px; font-weight: 700; color: #1e293b; }
+.header-badge { font-size: 11px; background: #dbeafe; color: #1d4ed8; padding: 2px 8px; border-radius: 12px; }
+.header-right { display: flex; gap: 8px; align-items: center; }
+.btn { padding: 6px 14px; border-radius: 6px; border: 1px solid transparent; font-size: 13px; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 5px; }
+.btn-green { background: #16a34a; color: #fff; }
+.btn-green:hover { background: #15803d; }
+.btn-blue { background: #2563eb; color: #fff; }
+.btn-blue:hover { background: #1d4ed8; }
+.btn-red { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
+.btn-red:hover { background: #fecaca; }
+.btn-gray { background: #f1f5f9; color: #64748b; border-color: #e2e8f0; }
+.btn-gray:hover { background: #e2e8f0; }
+.btn-purple { background: #7c3aed; color: #fff; }
+.btn-purple:hover { background: #6d28d9; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ========== Main ========== */
+.main { max-width: 1400px; margin: 0 auto; padding: 20px 24px; }
+
+/* ========== Upload Zone ========== */
+.upload-zone { border: 2px dashed #cbd5e1; border-radius: 12px; padding: 40px; text-align: center; background: #fff; margin-bottom: 20px; transition: all 0.3s; }
+.upload-zone:hover, .upload-zone.dragover { border-color: #3b82f6; background: #eff6ff; }
+.upload-zone p { color: #475569; font-size: 15px; margin: 8px 0 4px; }
+.upload-zone .upload-hint { color: #94a3b8; font-size: 12px; }
+.upload-zone .upload-link { color: #2563eb; cursor: pointer; text-decoration: underline; }
+#fileInput { display: none; }
+
+/* ========== Analysis Panel ========== */
+.analysis-panel { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 20px; overflow: hidden; max-height: 0; transition: max-height 0.4s ease; }
+.analysis-panel.open { max-height: 900px; }
+.analysis-content { padding: 24px; }
+.analysis-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.analysis-title { font-size: 16px; font-weight: 600; color: #1e293b; }
+.analysis-close { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 18px; }
+.analysis-close:hover { color: #64748b; }
+.analysis-grid { display: grid; grid-template-columns: 280px 1fr 1fr; gap: 24px; }
+
+/* Preview */
+.preview-box { text-align: center; }
+.preview-box img { max-width: 100%; max-height: 220px; border-radius: 8px; object-fit: cover; }
+.preview-filename { font-size: 12px; color: #94a3b8; margin-top: 8px; word-break: break-all; }
+
+/* Auto Analysis */
+.analysis-section h3 { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 12px; }
+.analysis-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 13px; }
+.analysis-label { color: #64748b; }
+.analysis-value { color: #334155; font-weight: 500; }
+.bar-container { width: 100px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; display: inline-block; vertical-align: middle; margin-right: 6px; }
+.bar { height: 100%; border-radius: 3px; transition: width 0.5s; }
+.bar-warm { background: #f97316; }
+.bar-cool { background: #3b82f6; }
+.color-dot { width: 18px; height: 18px; border-radius: 4px; display: inline-block; vertical-align: middle; border: 1px solid #e2e8f0; }
+.ai-badge-group { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.ai-badge { font-size: 11px; padding: 3px 10px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
+.ai-badge:hover { opacity: 0.8; }
+.ai-badge.active { box-shadow: 0 0 0 2px #3b82f6; }
+.ai-none { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+.ai-gen { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.ai-aux { background: #dbeafe; color: #1e40af; border-color: #93c5fd; }
+.ai-style { background: #fce7f3; color: #9d174d; border-color: #f9a8d4; }
+.ai-sus { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
+
+/* Form */
+.form-section h3 { font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 12px; }
+.form-section h3 .required { color: #ef4444; }
+.form-group { margin-bottom: 12px; }
+.form-label { display: block; font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.form-select, .form-input, .form-textarea { width: 100%; padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; outline: none; transition: border-color 0.2s; background: #fff; }
+.form-select:focus, .form-input:focus, .form-textarea:focus { border-color: #3b82f6; }
+.form-select:disabled { background: #f1f5f9; color: #94a3b8; }
+.form-textarea { resize: vertical; min-height: 50px; }
+.star-group { display: flex; gap: 4px; }
+.star { font-size: 22px; color: #e2e8f0; cursor: pointer; transition: color 0.2s; user-select: none; }
+.star:hover, .star.active { color: #fbbf24; }
+.save-btn { width: 100%; padding: 10px; background: #10b981; color: #fff; border: none; border-radius: 6px; font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; }
+.save-btn:hover { background: #059669; }
+
+/* ========== Filter Bar ========== */
+.filter-bar { background: #fff; border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; border: 1px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.filter-label { font-size: 13px; color: #64748b; font-weight: 500; }
+.filter-select { padding: 5px 10px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; outline: none; background: #fff; }
+.filter-select:focus { border-color: #3b82f6; }
+.search-box { position: relative; flex: 1; min-width: 200px; max-width: 300px; margin-left: auto; }
+.search-box input { width: 100%; padding: 6px 10px 6px 30px; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; outline: none; }
+.search-box input:focus { border-color: #3b82f6; }
+.search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: #94a3b8; font-size: 12px; }
+
+/* ========== Stats & Actions ========== */
+.stats-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
+.stats-title { font-size: 16px; font-weight: 600; color: #1e293b; }
+.stats-count { font-size: 13px; color: #64748b; font-weight: normal; }
+.stats-detail { font-size: 12px; color: #64748b; }
+.batch-actions { display: flex; gap: 8px; align-items: center; }
+.select-all-btn { font-size: 12px; color: #2563eb; cursor: pointer; background: none; border: none; }
+.select-all-btn:hover { text-decoration: underline; }
+
+/* ========== View Toggle ========== */
+.view-toggle { padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; cursor: pointer; color: #64748b; }
+.view-toggle:hover { background: #f8fafc; }
+
+/* ========== Grid View ========== */
+.grid-view { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+.grid-card { background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; cursor: pointer; transition: all 0.2s; position: relative; }
+.grid-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px -4px rgba(0,0,0,0.08); }
+.grid-card.selected { border-color: #3b82f6; box-shadow: 0 0 0 2px #3b82f6; }
+.grid-card-select { position: absolute; top: 8px; left: 8px; z-index: 10; }
+.grid-card-select input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; accent-color: #3b82f6; }
+.grid-card-img { position: relative; aspect-ratio: 1; overflow: hidden; background: #f1f5f9; }
+.grid-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.grid-card-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 8px 10px; background: linear-gradient(transparent, rgba(0,0,0,0.6)); color: #fff; font-size: 12px; display: flex; justify-content: space-between; align-items: center; }
+.grid-card-body { padding: 10px 12px; }
+.grid-card-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 6px; }
+.grid-card-id { font-size: 11px; font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px; margin-bottom: 4px; display: inline-block; }
+.tag { font-size: 11px; padding: 2px 8px; border-radius: 4px; background: #eff6ff; color: #1d4ed8; }
+.tag-secondary { background: #f1f5f9; color: #64748b; }
+.grid-card-usage { font-size: 12px; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.grid-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 11px; color: #94a3b8; }
+
+/* ========== List View ========== */
+.list-view { display: flex; flex-direction: column; gap: 10px; }
+.list-card { background: #fff; border-radius: 10px; border: 1px solid #e2e8f0; display: flex; align-items: center; padding: 12px; cursor: pointer; transition: all 0.2s; }
+.list-card:hover { box-shadow: 0 4px 12px -2px rgba(0,0,0,0.06); }
+.list-card.selected { border-color: #3b82f6; box-shadow: 0 0 0 2px #3b82f6; }
+.list-card-select { margin-right: 12px; }
+.list-card-select input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #3b82f6; }
+.list-card-img { width: 72px; height: 72px; border-radius: 8px; overflow: hidden; flex-shrink: 0; background: #f1f5f9; }
+.list-card-img img { width: 100%; height: 100%; object-fit: cover; }
+.list-card-body { flex: 1; margin-left: 16px; min-width: 0; }
+.list-card-id { font-size: 12px; font-weight: 700; color: #1e293b; background: #f1f5f9; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 4px; }
+.list-card-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+.list-card-meta { display: flex; gap: 16px; font-size: 12px; color: #64748b; }
+.list-card-actions { margin-left: 16px; }
+
+/* ========== Empty State ========== */
+.empty-state { text-align: center; padding: 60px 20px; }
+.empty-state-icon { font-size: 56px; color: #e2e8f0; margin-bottom: 16px; }
+.empty-state-text { color: #94a3b8; font-size: 14px; }
+
+/* ========== Footer ========== */
+.footer { background: #fff; border-top: 1px solid #e2e8f0; padding: 12px 24px; margin-top: 40px; }
+.footer-inner { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; }
+
+/* ========== Toast ========== */
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 10px 24px; border-radius: 8px; font-size: 13px; z-index: 1000; animation: toastIn 0.3s ease; }
+@keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* ========== Modal ========== */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; }
+.modal { background: #fff; border-radius: 12px; padding: 24px; max-width: 600px; width: 90%; max-height: 80vh; overflow: auto; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-title { font-size: 18px; font-weight: 600; }
+.modal-close { background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; }
+.modal-body { font-size: 13px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+
+/* ========== Table Preview ========== */
+.table-preview { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 12px; }
+.table-preview th, .table-preview td { border: 1px solid #e2e8f0; padding: 8px; text-align: left; }
+.table-preview th { background: #f8fafc; font-weight: 600; color: #475569; }
+.table-preview tr:nth-child(even) { background: #f8fafc; }
+
+/* ========== Responsive ========== */
+@media (max-width: 1024px) {
+  .analysis-grid { grid-template-columns: 1fr; }
+  .preview-box { text-align: center; }
+  .preview-box img { max-height: 180px; }
+}
+@media (max-width: 768px) {
+  .header { flex-wrap: wrap; gap: 8px; }
+  .main { padding: 16px; }
+  .grid-view { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+  .filter-bar { gap: 6px; }
+  .search-box { max-width: none; width: 100%; margin-left: 0; margin-top: 8px; }
+  .stats-bar { flex-direction: column; align-items: flex-start; }
+  .batch-actions { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <span style="font-size:22px;">🎬</span>
+    <span class="header-title">信息流拍摄素材库</span>
+    <span class="header-badge">纯前端版</span>
+  </div>
+  <div class="header-right">
+    <button class="btn btn-purple" id="exportTableBtn" onclick="exportSelectedTable()" disabled>
+      📋 导出选中表格
+    </button>
+    <button class="btn btn-gray" id="viewToggle" title="切换视图">
+      <span id="viewIcon">⊞</span> 网格
+    </button>
+    <button class="btn btn-green" onclick="exportData()">⬇ 导出备份</button>
+    <label class="btn btn-blue" style="cursor:pointer;">
+      ⬆ 导入
+      <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(this)">
+    </label>
+    <button class="btn btn-red" onclick="clearAll()">🗑 清空</button>
+  </div>
+</header>
+
+<main class="main">
+
+  <!-- Upload -->
+  <div class="upload-zone" id="dropZone">
+    <span style="font-size:42px; color:#94a3b8;">📤</span>
+    <p>拖拽图片到这里，或 <span class="upload-link" onclick="document.getElementById('fileInput').click()">点击上传</span>，或 Ctrl+V 粘贴</p>
+    <p class="upload-hint">支持 JPG / PNG / WebP</p>
+    <p class="upload-hint">上传后会自动分析色调，然后选择分类保存到素材库 👇</p>
+    <input type="file" id="fileInput" multiple accept="image/*" onchange="handleFiles(this.files)">
+  </div>
+
+  <!-- Analysis Panel -->
+  <div class="analysis-panel" id="analysisPanel">
+    <div class="analysis-content">
+      <div class="analysis-header">
+        <span class="analysis-title">🔮 图片分析</span>
+        <button class="analysis-close" onclick="closeAnalysis()">✕</button>
+      </div>
+      <div class="analysis-grid">
+        <div class="preview-box">
+          <img id="previewImg" src="" alt="预览">
+          <p class="preview-filename" id="fileName"></p>
+        </div>
+        <div class="analysis-section">
+          <h3>自动分析</h3>
+          <div class="analysis-row">
+            <span class="analysis-label">暖色比例</span>
+            <span class="analysis-value"><span class="bar-container"><span class="bar bar-warm" id="warmBar" style="width:0%"></span></span><span id="warmText">0%</span></span>
+          </div>
+          <div class="analysis-row">
+            <span class="analysis-label">冷色比例</span>
+            <span class="analysis-value"><span class="bar-container"><span class="bar bar-cool" id="coolBar" style="width:0%"></span></span><span id="coolText">0%</span></span>
+          </div>
+          <div class="analysis-row">
+            <span class="analysis-label">主色调</span>
+            <span class="analysis-value"><span class="color-dot" id="dominantColor" style="background:#ccc;"></span> <span id="hexValue">#------</span></span>
+          </div>
+          <div class="analysis-row">
+            <span class="analysis-label">亮度</span>
+            <span class="analysis-value" id="brightnessText">--</span>
+          </div>
+          <div class="analysis-row">
+            <span class="analysis-label">AI疑似度</span>
+            <span class="analysis-value" id="aiScore">--</span>
+          </div>
+          <div style="margin-top:12px;">
+            <span class="analysis-label">AI创意标注</span>
+            <div class="ai-badge-group">
+              <span class="ai-badge ai-none active" data-val="非AI" onclick="setAI(this)">非AI</span>
+              <span class="ai-badge ai-gen" data-val="AI生成" onclick="setAI(this)">AI生成</span>
+              <span class="ai-badge ai-aux" data-val="AI辅助" onclick="setAI(this)">AI辅助</span>
+              <span class="ai-badge ai-style" data-val="AI风格参考" onclick="setAI(this)">AI风格参考</span>
+              <span class="ai-badge ai-sus" data-val="疑似AI" onclick="setAI(this)">疑似AI</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-section">
+          <h3>手动分类 <span class="required">*</span></h3>
+          <div class="form-group">
+            <label class="form-label">一级分类</label>
+            <select class="form-select" id="level1" onchange="updateL2()">
+              <option value="">请选择</option>
+              <option value="桌搭">桌搭</option>
+              <option value="外景">外景</option>
+              <option value="真人口播">真人口播</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">二级分类</label>
+            <select class="form-select" id="level2" onchange="updateL3()" disabled>
+              <option value="">请先选一级</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">三级分类</label>
+            <select class="form-select" id="level3" disabled>
+              <option value="">请先选二级</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">情绪价值</label>
+            <select class="form-select" id="mood">
+              <option value="">请选择</option>
+              <option>松弛感</option><option>紧迫感</option><option>共鸣感</option><option>好奇感</option>
+              <option>专业感</option><option>破碎感</option><option>治愈感</option><option>孤独感</option>
+              <option>力量感</option><option>浪漫感</option><option>沉浸感</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">爆款潜力</label>
+            <div class="star-group" id="starGroup">
+              <span class="star" data-s="1" onclick="setStar(1)">★</span>
+              <span class="star" data-s="2" onclick="setStar(2)">★</span>
+              <span class="star" data-s="3" onclick="setStar(3)">★</span>
+              <span class="star" data-s="4" onclick="setStar(4)">★</span>
+              <span class="star" data-s="5" onclick="setStar(5)">★</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">建议用途</label>
+            <input class="form-input" id="usage" placeholder="例如：科技测评开头">
+          </div>
+          <div class="form-group">
+            <label class="form-label">备注</label>
+            <textarea class="form-textarea" id="note" placeholder="补充说明..."></textarea>
+          </div>
+          <div style="position: sticky; bottom: 0; background: #fff; padding: 12px 0; margin-top: 8px; border-top: 1px solid #e2e8f0;">
+            <button class="save-btn" id="saveBtn" onclick="saveMaterial()" style="background: #10b981; font-size: 15px; padding: 12px;">
+              <span style="font-size: 18px;">💾</span> <b>保存到素材库</b>
+            </button>
+            <p id="saveHint" style="text-align: center; font-size: 12px; color: #ef4444; margin-top: 6px; display: none;">⚠️ 请先选择一级分类（桌搭/外景/真人口播）</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <span class="filter-label">🔍 筛选</span>
+    <select class="filter-select" id="fL1" onchange="onFilterChange()">
+      <option value="">全部一级</option>
+      <option value="桌搭">桌搭</option>
+      <option value="外景">外景</option>
+      <option value="真人口播">真人口播</option>
+    </select>
+    <select class="filter-select" id="fL2" onchange="onFilterChange()">
+      <option value="">全部二级</option>
+    </select>
+    <select class="filter-select" id="fL3" onchange="onFilterChange()">
+      <option value="">全部三级</option>
+    </select>
+    <select class="filter-select" id="fMood" onchange="onFilterChange()">
+      <option value="">全部情绪</option>
+      <option>松弛感</option><option>紧迫感</option><option>共鸣感</option><option>好奇感</option>
+      <option>专业感</option><option>破碎感</option><option>治愈感</option><option>孤独感</option>
+      <option>力量感</option><option>浪漫感</option><option>沉浸感</option>
+    </select>
+    <select class="filter-select" id="fAI" onchange="onFilterChange()">
+      <option value="">全部AI</option>
+      <option value="非AI">非AI</option>
+      <option value="AI生成">AI生成</option>
+      <option value="AI辅助">AI辅助</option>
+      <option value="AI风格参考">AI风格参考</option>
+      <option value="疑似AI">疑似AI</option>
+    </select>
+    <select class="filter-select" id="fStar" onchange="onFilterChange()">
+      <option value="">全部星级</option>
+      <option value="5">⭐⭐⭐⭐⭐</option>
+      <option value="4">⭐⭐⭐⭐+</option>
+      <option value="3">⭐⭐⭐+</option>
+    </select>
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="fSearch" placeholder="搜索编号、用途、备注..." oninput="onFilterChange()">
+    </div>
+  </div>
+
+  <!-- Stats & Batch Actions -->
+  <div class="stats-bar">
+    <div>
+      <span class="stats-title">素材库 <span class="stats-count" id="totalCount">(0)</span></span>
+    </div>
+    <div class="batch-actions">
+      <button class="select-all-btn" onclick="toggleSelectAll()" id="selectAllBtn">全选</button>
+      <span id="selectedCount" style="font-size: 12px; color: #64748b;">已选: 0</span>
+      <button class="btn btn-purple" id="batchExportBtn" onclick="exportSelectedTable()" disabled style="padding: 4px 12px; font-size: 12px;">
+        📋 导出选中表格
+      </button>
+    </div>
+    <div class="stats-detail" id="statsDetail"></div>
+  </div>
+
+  <!-- Materials Grid -->
+  <div id="materialsView" class="grid-view"></div>
+  <div class="empty-state" id="emptyState" style="display:none;">
+    <div class="empty-state-icon">🖼️</div>
+    <p class="empty-state-text">暂无素材，上传图片开始构建你的素材库</p>
+  </div>
+
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span id="footerStats">总计：0张</span>
+    <span>数据存储在本地浏览器中 · 建议定期导出备份</span>
+  </div>
+</footer>
+
+<script>
+
+// ==================== 配置 ====================
+const CFG = {
+  "桌搭": {
+    "冷白调": [], "暖黄调": [], "暗黑调": [], "复古调": [], "马卡龙调": [],
+    "极简空镜": [], "满铺丰富": [], "半满平衡": [], "动态过程": []
+  },
+  "外景": {
+    "民宿/酒店": ["侘寂风","森系","设计师","复古洋房","洞穴","夜景窗景"],
+    "咖啡店": ["日式喫茶","韩系ins","工业风","社区小店","景观咖啡","制作过程"],
+    "城市街景": ["雨天街道","夜景霓虹","清晨空巷","老街巷弄","天桥高架"],
+    "自然风光": ["海边湖畔","森林公园","山景云海","城市公园"],
+    "特殊空间": ["书店图书馆","美术馆","复古市场","天台屋顶"]
+  },
+  "真人口播": {
+    "自拍视角": ["手持近景","手持中景","固定前置","车内","床上沙发","户外行走","对镜"],
+    "他拍视角": ["正面平视","侧面斜45°","过肩","远景小人","背影不露脸","俯拍","仰拍","偷拍抓拍"]
+  }
+};
+
+const ID_PREFIX = { "桌搭": "Z", "外景": "W", "真人口播": "K" };
+
+// ==================== 状态 ====================
+let materials = [];
+let curAnalysis = null;
+let curStar = 0;
+let curAI = '非AI';
+let isGrid = true;
+let editingId = null;
+let selectedIds = new Set();
+let db = null;
+
+// ==================== IndexedDB ====================
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('MatLibDB', 1);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => { db = req.result; resolve(); };
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('mats')) {
+        d.createObjectStore('mats', { keyPath: 'id' });
+      }
+    };
+  });
+}
+
+function dbPut(m) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(['mats'], 'readwrite');
+    const s = tx.objectStore('mats');
+    const r = s.put(m);
+    r.onsuccess = () => resolve();
+    r.onerror = () => reject(r.error);
+  });
+}
+
+function dbGetAll() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(['mats'], 'readonly');
+    const s = tx.objectStore('mats');
+    const r = s.getAll();
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => reject(r.error);
+  });
+}
+
+function dbDel(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(['mats'], 'readwrite');
+    const s = tx.objectStore('mats');
+    const r = s.delete(id);
+    r.onsuccess = () => resolve();
+    r.onerror = () => reject(r.error);
+  });
+}
+
+function dbClear() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(['mats'], 'readwrite');
+    const s = tx.objectStore('mats');
+    const r = s.clear();
+    r.onsuccess = () => resolve();
+    r.onerror = () => reject(r.error);
+  });
+}
+
+// ==================== 编号生成 ====================
+function generateCode(level1) {
+  const prefix = ID_PREFIX[level1] || 'X';
+  const sameType = materials.filter(m => m.category.level1 === level1);
+  const maxNum = sameType.reduce((max, m) => {
+    const match = m.code && m.code.match(new RegExp('^' + prefix + '_(\d+)$'));
+    return match ? Math.max(max, parseInt(match[1])) : max;
+  }, 0);
+  return prefix + '_' + String(maxNum + 1).padStart(3, '0');
+}
+
+// ==================== 初始化 ====================
+document.addEventListener('DOMContentLoaded', async () => {
+  await initDB();
+  materials = await dbGetAll();
+  render();
+  updateStats();
+  setupDrag();
+  setupPaste();
+  setupViewToggle();
+});
+
+// ==================== 上传 ====================
+function setupDrag() {
+  const dz = document.getElementById('dropZone');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+  dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.classList.remove('dragover');
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+    if (files.length) handleFiles(files);
+  });
+}
+
+function setupPaste() {
+  document.addEventListener('paste', e => {
+    const files = [];
+    for (let item of e.clipboardData.items) {
+      if (item.type.startsWith('image/')) {
+        const f = item.getAsFile();
+        if (f) files.push(f);
+      }
+    }
+    if (files.length) handleFiles(files);
+  });
+}
+
+function setupViewToggle() {
+  document.getElementById('viewToggle').addEventListener('click', () => {
+    isGrid = !isGrid;
+    const btn = document.getElementById('viewToggle');
+    btn.innerHTML = isGrid ? '<span id="viewIcon">⊞</span> 网格' : '<span id="viewIcon">☰</span> 列表';
+    render();
+  });
+}
+
+async function handleFiles(files) {
+  if (!files.length) return;
+  const file = files[0];
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => { processImage(img, file, url); };
+  img.src = url;
+}
+
+function processImage(img, file, url) {
+  const cvs = document.createElement('canvas');
+  const ctx = cvs.getContext('2d');
+  const s = Math.min(1, 300 / Math.max(img.width, img.height));
+  cvs.width = img.width * s;
+  cvs.height = img.height * s;
+  ctx.drawImage(img, 0, 0, cvs.width, cvs.height);
+  const data = ctx.getImageData(0, 0, cvs.width, cvs.height).data;
+  const analysis = analyzePixels(data, cvs.width, cvs.height);
+
+  const tc = document.createElement('canvas');
+  const tx = tc.getContext('2d');
+  const ts = Math.min(1, 400 / Math.max(img.width, img.height));
+  tc.width = img.width * ts;
+  tc.height = img.height * ts;
+  tx.drawImage(img, 0, 0, tc.width, tc.height);
+  const thumb = tc.toDataURL('image/jpeg', 0.7);
+
+  curAnalysis = { fileName: file.name, thumbnail: thumb, originalData: thumb, width: img.width, height: img.height, analysis };
+
+  document.getElementById('previewImg').src = thumb;
+  document.getElementById('fileName').textContent = file.name;
+  showAnalysis(analysis);
+  resetForm();
+  editingId = null;
+  document.getElementById('analysisPanel').classList.add('open');
+  setTimeout(() => {
+    document.getElementById('analysisPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+  URL.revokeObjectURL(url);
+}
+
+// ==================== 像素分析 ====================
+function analyzePixels(data, w, h) {
+  const total = w * h;
+  let warm = 0, cool = 0, neutral = 0;
+  let tr = 0, tg = 0, tb = 0;
+  let tbri = 0, tsat = 0;
+  const step = 4;
+  const n = Math.floor(total / step);
+
+  for (let i = 0; i < data.length; i += 4 * step) {
+    const r = data[i], g = data[i+1], b = data[i+2];
+    tr += r; tg += g; tb += b;
+    const bri = (r + g + b) / 3;
+    tbri += bri;
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+    const sat = mx === 0 ? 0 : (mx - mn) / mx;
+    tsat += sat;
+
+    if (r > b && r > g * 0.8 && sat > 0.15) warm++;
+    else if (b > r && b > g && sat > 0.15) cool++;
+    else neutral++;
+  }
+
+  const ar = Math.round(tr / n), ag = Math.round(tg / n), ab = Math.round(tb / n);
+  const hex = '#' + [ar, ag, ab].map(x => x.toString(16).padStart(2, '0')).join('');
+  const wr = warm / n, cr = cool / n;
+  const abri = tbri / n / 255;
+  const asat = tsat / n;
+
+  return {
+    warmRatio: Math.round(wr * 100),
+    coolRatio: Math.round(cr * 100),
+    neutralRatio: Math.round(neutral / n * 100),
+    dominant: wr > cr ? (wr > neutral / n ? 'warm' : 'neutral') : (cr > neutral / n ? 'cool' : 'neutral'),
+    hex, brightness: abri,
+    brightnessText: abri < 0.3 ? '偏暗' : abri < 0.7 ? '适中' : '偏亮',
+    saturation: asat,
+    aiScore: calcAIScore(data, w, h, asat, abri),
+    aiSuggestion: calcAISuggestion(data, w, h, asat, abri)
+  };
+}
+
+function calcAIScore(data, w, h, sat, bri) {
+  let score = 0;
+  if (sat > 0.8 || sat < 0.05) score += 0.25;
+  let noise = 0;
+  const sample = Math.min(data.length / 4, 10000);
+  for (let i = 4; i < sample * 4; i += 4) {
+    const d = Math.abs(data[i] - data[i-4]) + Math.abs(data[i+1] - data[i-3]) + Math.abs(data[i+2] - data[i-2]);
+    if (d > 30) noise++;
+  }
+  if (noise / sample < 0.05) score += 0.25;
+  const buckets = new Set();
+  for (let i = 0; i < data.length; i += 40) {
+    buckets.add(`${Math.floor(data[i]/16)},${Math.floor(data[i+1]/16)},${Math.floor(data[i+2]/16)}`);
+  }
+  if (buckets.size / (data.length / 40) < 0.3) score += 0.25;
+  const hist = new Array(10).fill(0);
+  for (let i = 0; i < data.length; i += 4) {
+    hist[Math.min(Math.floor(((data[i] + data[i+1] + data[i+2]) / 3) / 25.5), 9)]++;
+  }
+  if (Math.max(...hist) / hist.reduce((a,b) => a+b, 0) > 0.4) score += 0.25;
+  return Math.min(score, 1);
+}
+
+function calcAISuggestion(data, w, h, sat, bri) {
+  const score = calcAIScore(data, w, h, sat, bri);
+  if (score > 0.7) return '疑似AI';
+  if (score > 0.5) return 'AI风格参考';
+  if (score > 0.3) return 'AI辅助';
+  return '非AI';
+}
+
+function showAnalysis(a) {
+  document.getElementById('warmBar').style.width = a.warmRatio + '%';
+  document.getElementById('warmText').textContent = a.warmRatio + '%';
+  document.getElementById('coolBar').style.width = a.coolRatio + '%';
+  document.getElementById('coolText').textContent = a.coolRatio + '%';
+  document.getElementById('dominantColor').style.backgroundColor = a.hex;
+  document.getElementById('hexValue').textContent = a.hex.toUpperCase();
+  document.getElementById('brightnessText').textContent = a.brightnessText;
+  const aiEl = document.getElementById('aiScore');
+  aiEl.textContent = (a.aiScore * 100).toFixed(0) + '% - ' + a.aiSuggestion;
+  aiEl.style.color = a.aiScore > 0.5 ? '#ea580c' : '#64748b';
+  setAIBadge(a.aiSuggestion);
+}
+
+// ==================== 表单交互 ====================
+function updateL2() {
+  const l1 = document.getElementById('level1').value;
+  const l2 = document.getElementById('level2');
+  const l3 = document.getElementById('level3');
+  l2.innerHTML = '<option value="">请选择</option>';
+  l3.innerHTML = '<option value="">请先选二级</option>';
+  l3.disabled = true;
+  if (l1 && CFG[l1]) {
+    Object.keys(CFG[l1]).forEach(k => l2.innerHTML += `<option value="${k}">${k}</option>`);
+    l2.disabled = false;
+  } else {
+    l2.disabled = true;
+  }
+  // 隐藏提示
+  if (l1) {
+    document.getElementById('saveHint').style.display = 'none';
+    document.getElementById('level1').style.borderColor = '#10b981';
+  }
+}
+
+function updateL3() {
+  const l1 = document.getElementById('level1').value;
+  const l2 = document.getElementById('level2').value;
+  const l3 = document.getElementById('level3');
+  l3.innerHTML = '<option value="">请选择（可选）</option>';
+  if (l1 && l2 && CFG[l1][l2] && CFG[l1][l2].length) {
+    CFG[l1][l2].forEach(k => l3.innerHTML += `<option value="${k}">${k}</option>`);
+    l3.disabled = false;
+  } else {
+    l3.innerHTML = '<option value="">无三级分类</option>';
+    l3.disabled = true;
+  }
+}
+
+function setStar(n) {
+  curStar = n;
+  document.querySelectorAll('.star').forEach((el, i) => {
+    el.classList.toggle('active', i < n);
+  });
+}
+
+function setAI(el) {
+  curAI = el.dataset.val;
+  document.querySelectorAll('.ai-badge').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setAIBadge(val) {
+  curAI = val;
+  document.querySelectorAll('.ai-badge').forEach(b => {
+    b.classList.toggle('active', b.dataset.val === val);
+  });
+}
+
+function resetForm() {
+  document.getElementById('level1').value = '';
+  document.getElementById('level2').innerHTML = '<option value="">请先选一级</option>';
+  document.getElementById('level2').disabled = true;
+  document.getElementById('level3').innerHTML = '<option value="">请先选二级</option>';
+  document.getElementById('level3').disabled = true;
+  document.getElementById('mood').value = '';
+  document.getElementById('usage').value = '';
+  document.getElementById('note').value = '';
+  setStar(0);
+  setAIBadge('非AI');
+  document.getElementById('saveHint').style.display = 'none';
+  document.getElementById('level1').style.borderColor = '';
+}
+
+function closeAnalysis() {
+  document.getElementById('analysisPanel').classList.remove('open');
+  curAnalysis = null;
+  editingId = null;
+}
+
+// ==================== 保存素材 ====================
+async function saveMaterial() {
+  if (!curAnalysis) return;
+  const l1 = document.getElementById('level1').value;
+  if (!l1) {
+    document.getElementById('saveHint').style.display = 'block';
+    document.getElementById('level1').focus();
+    document.getElementById('level1').style.borderColor = '#ef4444';
+    setTimeout(() => { document.getElementById('level1').style.borderColor = ''; }, 2000);
+    return;
+  }
+  document.getElementById('saveHint').style.display = 'none';
+
+  const code = editingId ? (materials.find(m => m.id === editingId)?.code || generateCode(l1)) : generateCode(l1);
+
+  const mat = {
+    id: editingId || 'mat_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+    code: code,
+    fileName: curAnalysis.fileName,
+    thumbnail: curAnalysis.thumbnail,
+    originalData: curAnalysis.originalData,
+    width: curAnalysis.width,
+    height: curAnalysis.height,
+    analysis: curAnalysis.analysis,
+    category: { level1: l1, level2: document.getElementById('level2').value, level3: document.getElementById('level3').value },
+    tags: { mood: document.getElementById('mood').value, rating: curStar, aiCreative: curAI, usage: document.getElementById('usage').value, note: document.getElementById('note').value },
+    createdAt: new Date().toISOString()
+  };
+
+  await dbPut(mat);
+  if (editingId) {
+    const idx = materials.findIndex(m => m.id === editingId);
+    if (idx >= 0) materials[idx] = mat;
+  } else {
+    materials.push(mat);
+  }
+  render();
+  updateStats();
+  closeAnalysis();
+  toast(editingId ? '素材已更新 (' + code + ')' : '素材已保存 (' + code + ')');
+}
+
+// ==================== 渲染 ====================
+function render() {
+  const view = document.getElementById('materialsView');
+  const empty = document.getElementById('emptyState');
+  const filtered = getFiltered();
+
+  if (!filtered.length) {
+    view.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  view.className = isGrid ? 'grid-view' : 'list-view';
+  view.innerHTML = filtered.map(m => isGrid ? gridCard(m) : listCard(m)).join('');
+}
+
+function gridCard(m) {
+  const aiClass = getAIClass(m.tags.aiCreative);
+  const stars = '★'.repeat(m.tags.rating || 0) + '☆'.repeat(5 - (m.tags.rating || 0));
+  const dom = m.analysis.dominant === 'warm' ? '暖' : m.analysis.dominant === 'cool' ? '冷' : '中';
+  const isSel = selectedIds.has(m.id);
+  return `
+    <div class="grid-card ${isSel ? 'selected' : ''}" data-id="${m.id}">
+      <div class="grid-card-select" onclick="event.stopPropagation(); toggleSelect('${m.id}')">
+        <input type="checkbox" ${isSel ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelect('${m.id}')">
+      </div>
+      <div class="grid-card-img" onclick="editMaterial('${m.id}')">
+        <img src="${m.thumbnail}" loading="lazy" alt="${m.fileName}">
+        <div class="grid-card-overlay">
+          <span>${dom}</span>
+          <span style="color:#fbbf24;">${stars}</span>
+        </div>
+      </div>
+      <div class="grid-card-body" onclick="editMaterial('${m.id}')">
+        <span class="grid-card-id">${m.code || '无编号'}</span>
+        <div class="grid-card-tags">
+          <span class="tag">${m.category.level1}</span>
+          ${m.category.level2 ? `<span class="tag tag-secondary">${m.category.level2}</span>` : ''}
+        </div>
+        <p class="grid-card-usage">${m.tags.usage || '无用途说明'}</p>
+        <div class="grid-card-footer">
+          <span>${fmtDate(m.createdAt)}</span>
+          <span class="${aiClass}" style="font-size:10px; padding:1px 6px; border-radius:3px;">${m.tags.aiCreative}</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function listCard(m) {
+  const aiClass = getAIClass(m.tags.aiCreative);
+  const stars = '★'.repeat(m.tags.rating || 0) + '☆'.repeat(5 - (m.tags.rating || 0));
+  const dom = m.analysis.dominant === 'warm' ? '暖' : m.analysis.dominant === 'cool' ? '冷' : '中';
+  const isSel = selectedIds.has(m.id);
+  return `
+    <div class="list-card ${isSel ? 'selected' : ''}" data-id="${m.id}">
+      <div class="list-card-select" onclick="event.stopPropagation(); toggleSelect('${m.id}')">
+        <input type="checkbox" ${isSel ? 'checked' : ''} onclick="event.stopPropagation(); toggleSelect('${m.id}')">
+      </div>
+      <div class="list-card-img" onclick="editMaterial('${m.id}')"><img src="${m.thumbnail}" loading="lazy" alt="${m.fileName}"></div>
+      <div class="list-card-body" onclick="editMaterial('${m.id}')">
+        <span class="list-card-id">${m.code || '无编号'}</span>
+        <div class="list-card-row">
+          <span class="tag">${m.category.level1}</span>
+          ${m.category.level2 ? `<span class="tag tag-secondary">${m.category.level2}</span>` : ''}
+          ${m.category.level3 ? `<span style="font-size:11px; color:#94a3b8;">${m.category.level3}</span>` : ''}
+          <span class="${aiClass}" style="font-size:10px; padding:2px 8px; border-radius:3px; margin-left:auto;">${m.tags.aiCreative}</span>
+        </div>
+        <div class="list-card-meta">
+          <span>${dom}色 · 主色: <span style="display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:middle;border:1px solid #e2e8f0;background:${m.analysis.hex}"></span> ${m.analysis.hex}</span>
+          <span>亮度: ${m.analysis.brightnessText}</span>
+          <span style="color:#fbbf24;">${stars}</span>
+        </div>
+        <div class="list-card-meta" style="margin-top:2px;">
+          <span>情绪: ${m.tags.mood || '未标注'}</span>
+          <span>用途: ${m.tags.usage || '未标注'}</span>
+        </div>
+      </div>
+      <div class="list-card-actions">
+        <button onclick="event.stopPropagation(); delMaterial('${m.id}')" style="background:none;border:none;color:#cbd5e1;cursor:pointer;font-size:16px;">🗑</button>
+      </div>
+    </div>
+  `;
+}
+
+function getAIClass(ai) {
+  const map = { '非AI': 'ai-none', 'AI生成': 'ai-gen', 'AI辅助': 'ai-aux', 'AI风格参考': 'ai-style', '疑似AI': 'ai-sus' };
+  return map[ai] || 'ai-none';
+}
+
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+// ==================== 选择功能 ====================
+function toggleSelect(id) {
+  if (selectedIds.has(id)) {
+    selectedIds.delete(id);
+  } else {
+    selectedIds.add(id);
+  }
+  updateSelectUI();
+  render();
+}
+
+function toggleSelectAll() {
+  const filtered = getFiltered();
+  const allSelected = filtered.every(m => selectedIds.has(m.id));
+  if (allSelected) {
+    filtered.forEach(m => selectedIds.delete(m.id));
+  } else {
+    filtered.forEach(m => selectedIds.add(m.id));
+  }
+  updateSelectUI();
+  render();
+}
+
+function updateSelectUI() {
+  const count = selectedIds.size;
+  document.getElementById('selectedCount').textContent = '已选: ' + count;
+  document.getElementById('batchExportBtn').disabled = count === 0;
+  document.getElementById('exportTableBtn').disabled = count === 0;
+  document.getElementById('selectAllBtn').textContent = count === getFiltered().length && count > 0 ? '取消全选' : '全选';
+}
+
+// ==================== 筛选 ====================
+function getFiltered() {
+  const f1 = document.getElementById('fL1').value;
+  const f2 = document.getElementById('fL2').value;
+  const f3 = document.getElementById('fL3').value;
+  const mood = document.getElementById('fMood').value;
+  const ai = document.getElementById('fAI').value;
+  const star = document.getElementById('fStar').value;
+  const search = document.getElementById('fSearch').value.toLowerCase();
+
+  return materials.filter(m => {
+    if (f1 && m.category.level1 !== f1) return false;
+    if (f2 && m.category.level2 !== f2) return false;
+    if (f3 && m.category.level3 !== f3) return false;
+    if (mood && m.tags.mood !== mood) return false;
+    if (ai && m.tags.aiCreative !== ai) return false;
+    if (star && (m.tags.rating || 0) < parseInt(star)) return false;
+    if (search) {
+      const text = `${m.code || ''} ${m.fileName} ${m.tags.usage} ${m.tags.note} ${m.category.level1} ${m.category.level2}`.toLowerCase();
+      if (!text.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function onFilterChange() {
+  const f1 = document.getElementById('fL1').value;
+  const f2 = document.getElementById('fL2');
+  const f3 = document.getElementById('fL3');
+
+  f2.innerHTML = '<option value="">全部二级</option>';
+  f3.innerHTML = '<option value="">全部三级</option>';
+  f3.disabled = true;
+  if (f1 && CFG[f1]) {
+    Object.keys(CFG[f1]).forEach(k => f2.innerHTML += `<option value="${k}">${k}</option>`);
+  }
+
+  if (f2.value && f1 && CFG[f1] && CFG[f1][f2.value]) {
+    const opts = CFG[f1][f2.value];
+    if (opts.length) {
+      opts.forEach(k => f3.innerHTML += `<option value="${k}">${k}</option>`);
+      f3.disabled = false;
+    }
+  }
+
+  selectedIds.clear();
+  updateSelectUI();
+  render();
+}
+
+document.getElementById('fL1').addEventListener('change', onFilterChange);
+document.getElementById('fL2').addEventListener('change', () => {
+  const f1 = document.getElementById('fL1').value;
+  const f2 = document.getElementById('fL2').value;
+  const f3 = document.getElementById('fL3');
+  f3.innerHTML = '<option value="">全部三级</option>';
+  if (f1 && f2 && CFG[f1] && CFG[f1][f2] && CFG[f1][f2].length) {
+    CFG[f1][f2].forEach(k => f3.innerHTML += `<option value="${k}">${k}</option>`);
+    f3.disabled = false;
+  } else {
+    f3.disabled = true;
+  }
+  onFilterChange();
+});
+
+// ==================== 编辑/删除 ====================
+async function editMaterial(id) {
+  const m = materials.find(x => x.id === id);
+  if (!m) return;
+  editingId = id;
+  curAnalysis = { fileName: m.fileName, thumbnail: m.thumbnail, originalData: m.originalData, width: m.width, height: m.height, analysis: m.analysis };
+
+  document.getElementById('previewImg').src = m.thumbnail;
+  document.getElementById('fileName').textContent = m.fileName;
+  showAnalysis(m.analysis);
+
+  document.getElementById('level1').value = m.category.level1;
+  updateL2();
+  document.getElementById('level2').value = m.category.level2;
+  updateL3();
+  if (m.category.level3) document.getElementById('level3').value = m.category.level3;
+
+  document.getElementById('mood').value = m.tags.mood;
+  setStar(m.tags.rating);
+  setAIBadge(m.tags.aiCreative);
+  document.getElementById('usage').value = m.tags.usage;
+  document.getElementById('note').value = m.tags.note;
+
+  document.getElementById('analysisPanel').classList.add('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function delMaterial(id) {
+  if (!confirm('确定删除这张素材吗？')) return;
+  await dbDel(id);
+  materials = materials.filter(m => m.id !== id);
+  selectedIds.delete(id);
+  updateSelectUI();
+  render();
+  updateStats();
+  toast('素材已删除');
+}
+
+// ==================== 导出表格（选中） ====================
+function exportSelectedTable() {
+  const selected = materials.filter(m => selectedIds.has(m.id));
+  if (!selected.length) {
+    toast('请先选择素材');
+    return;
+  }
+
+  // 生成 CSV
+  const headers = ['编号', '一级分类', '二级分类', '三级分类', '冷暖', '主色调', '亮度', '情绪价值', '爆款潜力', 'AI创意', '建议用途', '备注', '创建日期'];
+  const rows = selected.map(m => [
+    m.code || '',
+    m.category.level1,
+    m.category.level2 || '',
+    m.category.level3 || '',
+    m.analysis.dominant === 'warm' ? '暖' : m.analysis.dominant === 'cool' ? '冷' : '中',
+    m.analysis.hex,
+    m.analysis.brightnessText,
+    m.tags.mood || '',
+    (m.tags.rating || 0) + '星',
+    m.tags.aiCreative,
+    m.tags.usage || '',
+    m.tags.note || '',
+    new Date(m.createdAt).toLocaleDateString()
+  ]);
+
+  let csv = '\uFEFF' + headers.join(',') + '\n';
+  rows.forEach(row => {
+    csv += row.map(cell => '"' + String(cell).replace(/"/g, '""') + '"').join(',') + '\n';
+  });
+
+  // 下载
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '素材库表格_' + new Date().toLocaleDateString() + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  toast('已导出 ' + selected.length + ' 条素材表格');
+}
+
+// ==================== 导出/导入备份 ====================
+async function exportData() {
+  const data = { version: '1.0', exportDate: new Date().toISOString(), materials };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '素材库备份_' + new Date().toLocaleDateString() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('已导出 ' + materials.length + ' 条素材备份');
+}
+
+async function importData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const data = JSON.parse(text);
+    if (!data.materials || !Array.isArray(data.materials)) throw new Error('格式错误');
+    if (!confirm('确定导入 ' + data.materials.length + ' 条素材？当前 ' + materials.length + ' 条将被覆盖。')) { input.value = ''; return; }
+    await dbClear();
+    for (const m of data.materials) await dbPut(m);
+    materials = data.materials;
+    selectedIds.clear();
+    render();
+    updateStats();
+    updateSelectUI();
+    toast('成功导入 ' + data.materials.length + ' 条素材');
+  } catch (e) {
+    alert('导入失败：' + e.message);
+  }
+  input.value = '';
+}
+
+async function clearAll() {
+  if (!confirm('确定清空所有素材？此操作不可恢复！')) return;
+  await dbClear();
+  materials = [];
+  selectedIds.clear();
+  render();
+  updateStats();
+  updateSelectUI();
+  toast('素材库已清空');
+}
+
+// ==================== 统计 ====================
+function updateStats() {
+  const total = materials.length;
+  const desk = materials.filter(m => m.category.level1 === '桌搭').length;
+  const out = materials.filter(m => m.category.level1 === '外景').length;
+  const talk = materials.filter(m => m.category.level1 === '真人口播').length;
+  const ai = materials.filter(m => m.tags.aiCreative !== '非AI').length;
+
+  document.getElementById('totalCount').textContent = '(' + total + ')';
+  document.getElementById('statsDetail').textContent = '桌搭: ' + desk + ' | 外景: ' + out + ' | 口播: ' + talk + ' | AI创意: ' + ai;
+  document.getElementById('footerStats').textContent = '总计: ' + total + '张 | 桌搭: ' + desk + ' | 外景: ' + out + ' | 口播: ' + talk + ' | AI创意: ' + ai;
+}
+
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2500);
+}
+</script>
+</body>
+</html>
